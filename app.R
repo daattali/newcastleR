@@ -2,21 +2,6 @@ library(shiny)
 library(ggplot2)
 library(magrittr)
 
-# first parameter on new line so it doesnt go very far
-# encoding ("r readcsv letters with accents")
-# read csv outside of server function
-# use shinybrowser to warn if on IE
-# add a min and max to min_matches
-# anything we do on client side (on the browser) is only for user friendliness - we always have to check in shiny on the server to make sure the input is fine. For example if i type a letter or a larger number, I'll get NA or a larger number
-# FYI - I could even use javascript to send a value to shiny. Just be aware of that and remember that you can't trust any value coming from the brwoser - every check has to be made on the server side
-# even better in my opinion - but this is completely subjective - use a slider. sliders and numeric inputs essentially provide the same functionality but using a different user experience. I use sliders when there aren't a lot of values
-# defensive programming - add an `else` when you reach a place you think you should never reach and throw an error
-# add a fixed column
-# remove the row number
-# dont use magic numbers for autowidth
-# dont use magic strings for positions list
-# make the plot button btn-lg and btn-primary
-
 ui <- fluidPage(
 
   shinyjs::useShinyjs(),
@@ -36,7 +21,9 @@ ui <- fluidPage(
                               "Position",
                               c("All", "Goalkeepers", "Defenders", "Midfielders", "Forwards")))
       ),
-      DT::DTOutput("main_data")
+      DT::DTOutput("main_data"),
+      actionButton("predict", "Predict player goals next season"),
+      textOutput("prediction")
     ),
 
     tabPanel(
@@ -70,7 +57,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  players_data <- read.csv("data/playersdata.csv")
+  players_data <- read.csv("data/playersdata.csv",encoding = "UTF-8")
 
   filtered_data <- reactive({
     data <- players_data
@@ -100,7 +87,10 @@ server <- function(input, output, session) {
   output$main_data <- DT::renderDT({
     data <- filtered_data()
 
-    data$HIGHLIGHT <- data$age <= 32 & data$goals >= 10 & data$minutes < 2000
+    data <- dplyr::mutate(
+      data,
+      ".highlight" = age <= 32 & data$goals >= 10 & data$minutes < 2000
+    )
 
     names(data) <- lapply(names(data), function(x) {
       gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", gsub("_", " ", x), perl = TRUE)
@@ -108,20 +98,63 @@ server <- function(input, output, session) {
 
     DT::datatable(
       data,
+      selection = "single",
       options = list(
-        autoWidth = TRUE,
         scrollX = TRUE,
         columnDefs = list(
-          list(width = 150, targets = c(1, 4)),
-          list(visible = FALSE, targets = 13)
+          list(visible = FALSE, targets = c(2, 13))
         )
       )
     ) %>%
       DT::formatStyle(
-        "HIGHLIGHT",
+        ".highlight",
         target = "row",
         backgroundColor = DT::styleEqual(TRUE, "#bcffc4")
       )
+  })
+
+  output$prediction <- renderText({
+    req(input$predict)
+
+    isolate({
+      player <- filtered_data()[input$main_data_rows_selected, ]
+      name <- player$player
+      goals <- player$goals
+      if (grepl("FW", player$position)) {
+        if (player$age <= 25) {
+          goals <- goals + 4
+        } else if (player$age <= 32) {
+          goals <- goals + 1
+        } else {
+          goals <- goals - 2
+        }
+      } else if (player$position == "GK") {
+        stop("Our prediction algorithm breaks for goalkeepers")
+      } else {
+        goals <- max(0, goals + sample(-2:2, 1))
+      }
+
+      paste("Expected goals next season:", goals)
+    })
+  })
+
+  prediction <- eventReactive(input$predict, {
+    player <- filtered_data()[input$main_data_rows_selected, ]
+    goals <- player$goals
+    if (grepl("FW", player$position)) {
+      if (player$age <= 25) {
+        goals <- goals + 4
+      } else if (player$age <= 32) {
+        goals <- goals + 1
+      } else {
+        goals <- goals - 2
+      }
+    } else if (player$position == "GK") {
+      stop("Our prediction algorithm breaks for goalkeepers")
+    } else {
+      goals <- max(0, goals + sample(-2:2, 1))
+    }
+    goals
   })
 
   output$teams_selector_ui <- renderUI({

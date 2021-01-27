@@ -2,6 +2,8 @@ function(input, output, session) {
 
   players_data <- read.csv("data/playersdata.csv")
 
+  # --- Explore tab
+
   filtered_data <- reactive({
     data <- players_data
 
@@ -80,6 +82,8 @@ function(input, output, session) {
       paste("Expected goals next season:", goals)
     })
   })
+
+  # --- Plot tab
 
   output$teams_selector_ui <- renderUI({
     selectInput("plot_team", "Team", choices = c("All", unique(players_data$team)), "All", multiple = TRUE)

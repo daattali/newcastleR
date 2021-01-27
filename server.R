@@ -34,7 +34,7 @@ function(input, output, session) {
 
     data <- dplyr::mutate(
       data,
-      ".highlight" = age <= 32 & data$goals >= 10 & data$minutes < 2000
+      ".highlight" = age <= 32 & goals >= 10 & minutes < 2000
     )
 
     names(data) <- lapply(names(data), function(x) {

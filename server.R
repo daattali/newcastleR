@@ -1,6 +1,6 @@
 function(input, output, session) {
 
-  players_data <- read.csv("data/playersdata.csv")
+  players_data <- read.csv("~/some/path/on/my/own/computer/EPLapp/data/playersdata.csv")
 
   # --- Explore tab
 

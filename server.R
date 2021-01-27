@@ -82,19 +82,19 @@ function(input, output, session) {
   })
 
   output$teams_selector_ui <- renderUI({
-    selectInput("plot_team", "Team", choices = c("All" = "", unique(players_data$team)), multiple = TRUE)
+    selectInput("plot_team", "Team", choices = c("All", unique(players_data$team)), "All", multiple = TRUE)
   })
 
   observeEvent(input$do_plot, {
     output$plot <- renderPlot({
       data <- players_data
-      if (length(input$plot_team) > 0) {
+      if (!"All" %in% input$plot_team) {
         data <- dplyr::filter(data, team %in% input$plot_team)
       }
 
       ggplot(data, aes_string(tolower(input$xvar), tolower(input$yvar))) +
         geom_point(size = input$plot_marker_size, col = input$plot_marker_col, alpha = 0.4) +
-        theme(panel.background = element_rect(fill = input$plot_col))
+        theme_bw(input$plot_theme_size)
     })
   })
 

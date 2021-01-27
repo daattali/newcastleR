@@ -43,11 +43,14 @@ fluidPage(
       fluidRow(
         id = "plot_options",
         column(4, sliderInput("plot_marker_size", "Marker size", 1, 5, 1)),
-        column(4, colourpicker::colourInput("plot_marker_col", "Marker colour", "#471D85")),
-        column(4, colourpicker::colourInput("plot_col", "Plot colour", "#EDEEFF"))
+        column(4, sliderInput("plot_theme_size", "Text size", 10, 30, 12)),
+        column(4, colourpicker::colourInput("plot_marker_col", "Marker colour", "#471D85"))
       ) %>% shinyjs::hidden(), br(),
       actionButton("do_plot", "Plot!"),
       plotOutput("plot")
     )
-  )
+  ),
+
+  br(), br(),
+  "For best experience, please don't use Internet Explorer"
 )

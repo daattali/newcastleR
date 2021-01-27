@@ -6,21 +6,20 @@ fluidPage(
 
   tabsetPanel(
 
-    tabPanel(
-      "Explore players",
-      fluidRow(
-        column(
-          4,
-          numericInput("num_matches", "Minimum matches", 5)
-        ),
-        column(4, selectInput("position",
-                              "Position",
-                              c("All", "Goalkeepers", "Defenders", "Midfielders", "Forwards")))
-      ),
-      DT::DTOutput("main_data"),
-      br(),
-      actionButton("predict", "Predict player goals next season"),
-      textOutput("prediction", inline = TRUE)
+    tabPanel("Explore players",
+             fluidRow(
+               column(
+                 4,
+                 numericInput("num_matches", "Minimum matches", 5)
+               ),
+               column(4, selectInput("position",
+                                     "Position",
+                                     c("All", "Goalkeepers", "Defenders", "Midfielders", "Forwards")))
+             ),
+             DT::DTOutput("main_data"),
+             br(),
+             actionButton("predict", "Predict player goals next season"),
+             textOutput("prediction", inline = TRUE)
     ),
 
     tabPanel(

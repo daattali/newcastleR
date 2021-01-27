@@ -1,6 +1,6 @@
 function(input, output, session) {
 
-  players_data <- read.csv("data/playersdata.csv",encoding = "UTF-8")
+  players_data <- read.csv("data/playersdata.csv")
 
   filtered_data <- reactive({
     data <- players_data
